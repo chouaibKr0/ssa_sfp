@@ -1,0 +1,73 @@
+# Model configuration
+model_type: "MLPClassifier"
+default_params:
+  random_state: 42
+  max_iter: 1000
+  early_stopping: true
+  validation_fraction: 0.1
+  n_iter_no_change: 10
+
+# HPO search space - CONTINUOUS INTERVALS
+search_space:
+  # Hidden layer sizes (variable architecture)
+  hidden_layer_sizes:
+    type: "categorical"
+    choices: [
+      [50], [100], [200], [500],
+      [50, 25], [100, 50], [200, 100], [500, 250],
+      [100, 50, 25], [200, 100, 50], [500, 250, 125]
+    ]
+  
+  # Learning rate (log-uniform distribution)
+  learning_rate_init:
+    type: "log_uniform"
+    min_value: 1e-5      # 0.00001
+    max_value: 1e-1      # 0.1
+  
+  # Alpha regularization (log-uniform distribution)
+  alpha:
+    type: "log_uniform"
+    min_value: 1e-6      # 0.000001
+    max_value: 1e-1      # 0.1
+  
+  # Batch size (log-uniform integer)
+  batch_size:
+    type: "int_log_uniform"
+    min_value: 16
+    max_value: 512
+  
+  # Beta 1 for Adam optimizer (uniform)
+  beta_1:
+    type: "uniform"
+    min_value: 0.8
+    max_value: 0.99
+  
+  # Beta 2 for Adam optimizer (uniform)  
+  beta_2:
+    type: "uniform"
+    min_value: 0.9
+    max_value: 0.9999
+  
+  # Learning rate schedule
+  learning_rate:
+    type: "categorical"
+    choices: ["constant", "invscaling", "adaptive"]
+  
+  # Activation function
+  activation:
+    type: "categorical"
+    choices: ["relu", "tanh", "logistic"]
+  
+  # Solver
+  solver:
+    type: "categorical"
+    choices: ["adam", "lbfgs", "sgd"]
+
+
+# Cross-validation
+cross_validation:
+  method: "StratifiedKFold"
+  n_splits: 5
+  shuffle: true
+  random_state: 42
+

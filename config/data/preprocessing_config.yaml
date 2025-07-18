@@ -1,0 +1,35 @@
+# Feature engineering
+feature_selection:
+  method: "literature_based"
+  selected_features: [
+    "loc",           # Lines of Code
+    "complexity",    # Cyclomatic Complexity
+    "coupling",      # Coupling Between Objects
+    "cohesion",      # Lack of Cohesion of Methods
+    "inheritance",   # Depth of Inheritance Tree
+    "wmc",          # Weighted Methods per Class
+    "rfc",          # Response for Class
+    "lcom",         # Lack of Cohesion in Methods
+    "ca",           # Afferent Coupling
+    "ce",           # Efferent Coupling
+    "npm",          # Number of Public Methods
+    "dam",          # Data Access Metric
+    "moa",          # Measure of Aggregation
+    "mfa",          # Measure of Functional Abstraction
+    "cam",          # Cohesion Among Methods
+    "ic",           # Inheritance Coupling
+    "cbm",          # Coupling Between Methods
+    "amc",          # Average Method Complexity
+    "max_cc",       # Maximum Cyclomatic Complexity
+    "avg_cc"        # Average Cyclomatic Complexity
+  ]
+
+
+
+# Scaling
+scaler:
+  type: "StandardScaler"
+  
+# Missing value handling
+missing_values:
+  strategy: "median"

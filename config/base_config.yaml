@@ -1,0 +1,13 @@
+# Project metadata
+project_name: "SFP_SSA"
+version: "1.0.0"
+random_seed: 42
+
+# Paths
+data_dir: "data"
+results_dir: "results"
+logs_dir: "experiments/logs"
+
+# Experiment settings
+n_jobs: -1  # Use all CPU cores
+verbose: 1
