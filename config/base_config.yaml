@@ -9,5 +9,5 @@ results_dir: "results"
 logs_dir: "experiments/logs"
 
 # Experiment settings
-n_jobs: -1  # Use all CPU cores
+n_jobs: 2  # Use 2 CPU cores
 verbose: 1

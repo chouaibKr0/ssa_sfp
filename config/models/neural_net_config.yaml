@@ -64,10 +64,5 @@ search_space:
     choices: ["adam", "lbfgs", "sgd"]
 
 
-# Cross-validation
-cross_validation:
-  method: "StratifiedKFold"
-  n_splits: 5
-  shuffle: true
-  random_state: 42
+
 

@@ -1,0 +1,9 @@
+{
+  "master_seed": 42,
+  "cv_seeds": [42, 123, 456, 789, 101112],
+  "hpo_seeds": [42, 142, 242, 342, 442],
+  "experiment_seeds": {
+    "repeated_cv": [42, 123, 456],
+    "nested_cv": [789, 101112, 131415]
+  }
+}

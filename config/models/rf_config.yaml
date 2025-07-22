@@ -57,9 +57,3 @@ search_space:
     none_probability: 0.7  # 70% chance to sample None
 
 
-# Cross-validation
-cross_validation:
-  method: "StratifiedKFold"
-  n_splits: 5
-  shuffle: true
-  random_state: 42
