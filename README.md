@@ -3,7 +3,7 @@
 This project investigates the impact of hyperparameter optimization (HPO) methods including grid search, Bayesian optimization, and metaheuristics for software fault prediction problem.
 
 ## Project Structure
-
+```
 project/
 ├── config/ # Configuration files
 ├── data/ # Data storage (raw, interim, processed)
@@ -13,7 +13,7 @@ project/
 ├── src/ # Source code
 ├── tests/ # Test suite
 └── docs/ # Documentation
-
+```
 ## Setup
 
 1. Clone the repository
