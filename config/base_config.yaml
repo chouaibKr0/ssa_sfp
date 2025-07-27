@@ -1,7 +1,28 @@
 # Project metadata
 project_name: "SFP_SSA"
+project_description: "Research framework for statistical comparison of HPO methods in Software Fault Prediction"
+author: "Chouaib K"
 version: "1.0.0"
 random_seed: 42
+
+
+# Model parameters
+model:
+  random_state: 42
+  n_estimators: 100
+  n_jobs: 1 
+
+# Cross-validation settings
+cross_validation:
+  method: "stratified_k_fold"
+  n_splits: 5
+  random_state: 42
+  shuffle: true
+
+# Metrics
+metrics:
+  primary: "roc_auc"
+  secondary: ["roc_auc","matthews_corrcoef", "f1_macro", "precision_macro", "recall_macro"]
 
 # Paths
 data_dir: "data"
@@ -9,5 +30,9 @@ results_dir: "results"
 logs_dir: "experiments/logs"
 
 # Experiment settings
-n_jobs: 2  # Use 2 CPU cores
+n_jobs: 1  
 verbose: 1
+
+# mlflow settings
+use_mlflow: true
+ mlflow_tracking_uri: "http://localhost:5000"

@@ -1,9 +1,8 @@
 # Model configuration
 model_type: "RandomForestClassifier"
-default_params:
-  random_state: 42
-  class_weight: "balanced"  # Important for imbalanced SFP datasets
-  n_jobs: -1
+random_state: 42
+class_weight: "balanced"  # Important for imbalanced SFP datasets
+n_jobs: 1
 
 # HPO search space - CONTINUOUS INTERVALS
 search_space:

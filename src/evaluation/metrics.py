@@ -1,17 +1,22 @@
-from sklearn.metrics import precision_score, recall_score, f1_score, roc_auc_score,matthews_corrcoef
 
-class SFPMetrics:
-    @staticmethod
-    def calculate_all_metrics(y_true, y_pred, y_prob=None):
-        metrics = {
-            'mcc': matthews_corrcoef(y_true, y_pred),
-            'precision': precision_score(y_true, y_pred),
-            'recall': recall_score(y_true, y_pred),
-            'f1': f1_score(y_true, y_pred),
-            'specificity': recall_score(y_true, y_pred, pos_label=0)
-        }
-        
-        if y_prob is not None:
-            metrics['auc'] = roc_auc_score(y_true, y_prob)
-            
-        return metrics
+from src.utils import load_config
+
+
+base_config = load_config("config/base_config.yaml")
+def get_primary_metric() -> str:
+    """
+    Get the primary evaluation metric from the configuration.
+    
+    Returns:
+        Primary metric name as a string
+    """
+    return base_config.get('metrics', {}).get('primary', 'roc_auc')
+
+def get_secondary_metrics() -> list:
+    """
+    Get the secondary evaluation metrics from the configuration.
+    
+    Returns:
+        List of secondary metric names
+    """
+    return base_config.get('metrics', {}).get('secondary', ['matthews_corrcoef', 'f1_macro', 'precision_macro', 'recall_macro'])

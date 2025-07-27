@@ -1,9 +1,9 @@
 # Model configuration
 model_type: "SVC"
-default_params:
-  random_state: 42
-  class_weight: "balanced"  # Critical for imbalanced SFP datasets
-  probability: true         # Enable probability estimates for ROC-AUC
+
+random_state: 42
+class_weight: "balanced"  # Critical for imbalanced SFP datasets
+probability: true         # Enable probability estimates for ROC-AUC
 
 # HPO search space - CONTINUOUS INTERVALS
 search_space:
