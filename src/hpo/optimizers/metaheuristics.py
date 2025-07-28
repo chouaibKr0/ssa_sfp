@@ -2,7 +2,13 @@ import numpy as np
 import random
 import math
 from func_timeout import func_timeout, FunctionTimedOut
+from ..search_spaces.decoder import _TRANSFORMATIONS, _decode_position_baseline, _decode_position_sigmoid, _decode_position_softmax, _decode_position_softmax_argmax, _decode_position_tanh, _decode_position_gaussian, _decode_position_floor, _decode_position_modulo, _decode_position_gumbel_softmax, _decode_position_lerp
 from .base_optimizer import BaseOptimizer
+from ...evaluation.cross_validation import evaluate_model_cv
+from ...utils import load_config
+
+base_config = load_config('configs/base_config.yaml')
+hpo_config = load_config('configs/hpo_config.yaml')
 
 class SalpSwarmOptimizer(BaseOptimizer):
     """
@@ -13,12 +19,14 @@ class SalpSwarmOptimizer(BaseOptimizer):
     - Handles mapping between real-valued salp positions and hyperparameter values.
     - Minimize: lower objective score is better.
     """
-    def __init__(self, search_space, num_salps=20, max_iter=30, strategy='basic', **kwargs):
-        super().__init__(search_space, **kwargs)
+    def __init__(self, model, num_salps=20, max_iter=30, strategy='basic', transformation_function='baseline', **kwargs):
+
+        super().__init__(model, **kwargs)
         self.num_salps = num_salps
         self.max_iter = max_iter
         self.strategy = strategy
-        self.param_info = self._parse_search_space(search_space)
+        self.transformation_function = transformation_function
+        self.param_info = self._parse_search_space(self.search_space)
         self.dim = len(self.param_info)
         # Scalar bounds
         self.lb = np.array([info["lb"] for info in self.param_info], dtype=float)
@@ -62,30 +70,42 @@ class SalpSwarmOptimizer(BaseOptimizer):
                 # Single fixed value: degenerate interval
                 param_info.append({"name": k, "type": "constant", "lb": 0, "ub": 0, "choices": [v]})
         return param_info
-
+    # Decode position to hyperparameters
+    # 1. Baseline
     def _decode_position(self, pos):
         """
         Map optimizer's real-valued position to actual hyperparameter values to try.
         """
-        hp = {}
-        for i, info in enumerate(self.param_info):
-            if info["type"] == "log":
-                hp[info["name"]] = 10 ** float(pos[i])
-            elif info["type"] == "int_log":
-                hp[info["name"]] = int(round(10 ** float(pos[i])))
-            elif info["type"] == "int":
-                hp[info["name"]] = int(round(pos[i]))
-            elif info["type"] == "linear":
-                hp[info["name"]] = float(pos[i])
-            elif info["type"] == "cat":
-                idx = int(round(pos[i]))
-                idx = max(0, min(idx, len(info["choices"]) - 1))
-                hp[info["name"]] = info["choices"][idx]
-            elif info["type"] == "constant":
-                hp[info["name"]] = info["choices"][0]
-        return hp
+        if self.transformation_function not in _TRANSFORMATIONS:
+            raise ValueError(f"Unknown transformation function: {self.transformation_function}. Supported: {_TRANSFORMATIONS}")
+        if self.transformation_function == "baseline":
+            return _decode_position_baseline(self, pos)
+        elif self.transformation_function == "smooth_bounded":
+            return _decode_position_sigmoid(self, pos)
+        elif self.transformation_function == "probabilistic":
+            return _decode_position_softmax(self, pos)
+        elif self.transformation_function == "deterministic_probabilistic":
+            return _decode_position_softmax_argmax(self, pos)
+        elif self.transformation_function == "symmetric_bounded":
+            return _decode_position_tanh(self, pos)
+        elif self.transformation_function == "differentiable":
+            return _decode_position_gumbel_softmax(self, pos)
+        elif self.transformation_function == "floor":
+            return _decode_position_floor(self, pos)
+        elif self.transformation_function == "modulo":
+            return _decode_position_modulo(self, pos)
+        elif self.transformation_function == "gaussian":
+            return _decode_position_gaussian(self, pos)
+        elif self.transformation_function == "lerp":
+            return _decode_position_lerp(self, pos)
 
-    def optimize(self, objective_function, n_trials=None):
+
+
+    def objective_function(self,X, y, params):
+        return evaluate_model_cv(self.model, X=X, y=y, params=params, cv_config=base_config.get("cv_config", {}), scoring=base_config.get("metrics", {}).get("primary", "roc_auc"))
+
+    # Optimize the objective function
+    def optimize(self, X, y, objective_function, n_trials=None):
         """
         objective_function: expects param dict, returns scalar to minimize
         n_trials is ignored; sweeps self.max_iter * num_salps
@@ -94,7 +114,7 @@ class SalpSwarmOptimizer(BaseOptimizer):
         def _objective_fn(position):
             try:
                 params = self._decode_position(position)
-                score = objective_function(params)
+                score = objective_function(self, X, y, params)
                 return score
             except Exception as e:
                 print(f"[SSA Warning] Failed to evaluate params due to: {e}")
@@ -196,3 +216,5 @@ class SalpSwarmOptimizer(BaseOptimizer):
                 self.food_position = candidate.copy()
         except Exception:
             pass
+
+

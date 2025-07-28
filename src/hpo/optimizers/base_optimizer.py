@@ -2,11 +2,15 @@ from abc import ABC, abstractmethod
 from typing import Dict, Any, List, Tuple,Callable
 import numpy as np
 import random
+from ..search_spaces.parameter_spaces import _MODELS, get_search_space
 
 
 class BaseOptimizer(ABC):
-    def __init__(self, search_space: Dict[str, Any], **kwargs):
-        self.search_space = search_space
+    def __init__(self, model: str, **kwargs):
+        if model not in _MODELS:
+            raise ValueError(f"Unsupported model: {model}. Supported models are: {_MODELS}")
+        self.model = model
+        self.search_space = get_search_space(model)
         self.history = []
     
     @abstractmethod
@@ -54,12 +58,12 @@ class DiscreteBaseOptimizer(BaseOptimizer):
 
     def __init__(
         self,
-        search_space: Dict[str, Any],
+        model: str,
         grid_points: int = 7,                # how many values per continuous dim
         random_state: int = 42,
         **kwargs,
     ):
-        super().__init__(search_space, **kwargs)
+        super().__init__(model, **kwargs)
         self.grid_points = max(grid_points, 2)
         self.rng = np.random.default_rng(random_state)
 
