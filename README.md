@@ -1,9 +1,9 @@
-# HPO Research Project
+#  HPO in SFP Research Project
 
-This project investigates the impact of hyperparameter optimization (HPO) methods including grid search, Bayesian optimization, and metaheuristics for specific prediction problems.
+This project investigates the impact of hyperparameter optimization (HPO) methods including grid search, Bayesian optimization, and metaheuristics for software fault prediction problem.
 
 ## Project Structure
-
+```
 project/
 ├── config/ # Configuration files
 ├── data/ # Data storage (raw, interim, processed)
@@ -13,7 +13,7 @@ project/
 ├── src/ # Source code
 ├── tests/ # Test suite
 └── docs/ # Documentation
-
+```
 ## Setup
 
 1. Clone the repository
@@ -24,7 +24,6 @@ project/
 
 1. Configure your experiments in `config/experiments/`
 2. Run experiments using scripts in `experiments/scripts/`
-3. Analyze results using notebooks in `notebooks/`
 
 ## Statistical Testing
 
