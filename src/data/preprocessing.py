@@ -7,7 +7,7 @@ import numpy as np
 from typing import Dict, Any, Optional, List, Tuple, Union
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler, LabelEncoder
 from sklearn.impute import SimpleImputer
-from utils import load_config
+from ..utils import load_config
 
 
 preprocessing_config = load_config('config/data/preprocessing_config.yaml')

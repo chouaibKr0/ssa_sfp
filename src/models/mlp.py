@@ -7,7 +7,7 @@ from sklearn.neural_network import MLPClassifier
 from .base_model import BaseModel
 from utils import load_config
 
-mlp_config = load_config("config/mlp_config.yaml")
+mlp_config = load_config("config/models/mlp_config.yaml")
 
 class MLPWrapper(BaseModel):
     """Simple Neural Network wrapper."""

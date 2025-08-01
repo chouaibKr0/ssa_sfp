@@ -7,7 +7,7 @@ from sklearn.ensemble import RandomForestClassifier
 from .base_model import BaseModel
 from utils import load_config
 
-rf_config = load_config("config/rf_config.yaml")
+rf_config = load_config("config/models/rf_config.yaml")
 
 class RandomForestWrapper(BaseModel):
     """Simple Random Forest wrapper."""

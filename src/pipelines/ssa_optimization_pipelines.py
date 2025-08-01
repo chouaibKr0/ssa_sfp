@@ -1,5 +1,5 @@
 from requests import get
-from ..utils import load_config, merge_configs
+from ..utils import load_config
 from ..data.loaders import DatasetLoader
 from ..data.preprocessing import DataPreprocessor
 import pandas as pd

@@ -1,5 +1,5 @@
 from ...utils import load_config
-
+from typing import Dict, Any
 _MODELS = {
     'rf',
     'svm',
@@ -8,18 +8,18 @@ _MODELS = {
 
 
 def get_svm_search_space():
-    svm_config = load_config('configs/svm_config.yaml')
+    svm_config = load_config('config/models/svm_config.yaml')
 
     return svm_config.get('search_space', {})
 
 def get_rf_search_space(trial):
-    rf_config = load_config('configs/rf_config.yaml')
+    rf_config = load_config('config/models/rf_config.yaml')
 
     return rf_config.get('search_space', {})
 
 
 def get_mlp_search_space(trial):
-    mlp_config = load_config('configs/mlp_config.yaml')
+    mlp_config = load_config('config/models/mlp_config.yaml')
 
     return mlp_config.get('search_space', {})
 

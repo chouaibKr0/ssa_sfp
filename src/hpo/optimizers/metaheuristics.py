@@ -7,8 +7,8 @@ from .base_optimizer import BaseOptimizer
 from ...evaluation.cross_validation import evaluate_model_cv
 from ...utils import load_config
 
-base_config = load_config('configs/base_config.yaml')
-hpo_config = load_config('configs/hpo_config.yaml')
+base_config = load_config('config/base_config.yaml')
+hpo_config = load_config('config/hpo_config.yaml')
 
 class SalpSwarmOptimizer(BaseOptimizer):
     """
