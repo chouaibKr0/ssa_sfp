@@ -1,5 +1,5 @@
 
-from src.utils import load_config
+from ..utils import load_config
 
 
 base_config = load_config("config/base_config.yaml")

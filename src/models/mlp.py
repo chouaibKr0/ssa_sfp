@@ -5,7 +5,7 @@ Simple Neural Network wrapper.
 from typing import Dict, Any
 from sklearn.neural_network import MLPClassifier
 from .base_model import BaseModel
-from utils import load_config
+from ..utils import load_config
 
 mlp_config = load_config("config/models/mlp_config.yaml")
 

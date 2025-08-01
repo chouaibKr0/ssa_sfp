@@ -5,7 +5,7 @@ Simple Random Forest wrapper.
 from typing import Dict, Any
 from sklearn.ensemble import RandomForestClassifier
 from .base_model import BaseModel
-from utils import load_config
+from ..utils import load_config
 
 rf_config = load_config("config/models/rf_config.yaml")
 

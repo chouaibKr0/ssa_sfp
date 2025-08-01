@@ -7,7 +7,7 @@ from typing import Dict, Any, Union
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator
-from evaluation.metrics import get_primary_metric, get_secondary_metrics
+from ..evaluation.metrics import get_primary_metric, get_secondary_metrics
 
 class BaseModel(ABC):
     """Simple base class for model wrappers."""

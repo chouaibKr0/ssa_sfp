@@ -5,7 +5,7 @@ Simple SVM wrapper.
 from typing import Dict, Any
 from sklearn.svm import SVC
 from .base_model import BaseModel
-from utils import load_config
+from ..utils import load_config
 svm_config = load_config("config/models/svm_config.yaml")
 class SVMWrapper(BaseModel):
     """Simple SVM wrapper."""
