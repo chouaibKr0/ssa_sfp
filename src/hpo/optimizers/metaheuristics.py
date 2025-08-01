@@ -37,6 +37,8 @@ class SalpSwarmOptimizer(BaseOptimizer):
         self.food_fitness = float("inf")
         self._best_params = None
 
+    import math
+
     def _parse_search_space(self, search_space):
         """
         Converts the search space dict into a flat config list of
@@ -51,25 +53,70 @@ class SalpSwarmOptimizer(BaseOptimizer):
             if isinstance(v, dict):
                 t = v.get("type", "")
                 if t == "log_uniform":
-                    param_info.append({"name": k, "type": "log", "lb": math.log10(v["min_value"]), "ub": math.log10(v["max_value"])})
+                    min_val = float(v["min_value"])
+                    max_val = float(v["max_value"])
+                    param_info.append({
+                        "name": k,
+                        "type": "log",
+                        "lb": math.log10(min_val),
+                        "ub": math.log10(max_val)
+                    })
                 elif t == "uniform":
-                    param_info.append({"name": k, "type": "linear", "lb": v["min_value"], "ub": v["max_value"]})
+                    min_val = float(v["min_value"])
+                    max_val = float(v["max_value"])
+                    param_info.append({
+                        "name": k,
+                        "type": "linear",
+                        "lb": min_val,
+                        "ub": max_val
+                    })
                 elif t == "int_uniform" or t == "int_log_uniform":
                     # integer (but will round in decode)
                     is_log = "log" in t
+                    min_val = int(v["min_value"])
+                    max_val = int(v["max_value"])
                     if is_log:
-                        param_info.append({"name": k, "type": "int_log", "lb": math.log10(v["min_value"]), "ub": math.log10(v["max_value"])})
+                        param_info.append({
+                            "name": k,
+                            "type": "int_log",
+                            "lb": math.log10(float(min_val)),
+                            "ub": math.log10(float(max_val))
+                        })
                     else:
-                        param_info.append({"name": k, "type": "int", "lb": v["min_value"], "ub": v["max_value"]})
+                        param_info.append({
+                            "name": k,
+                            "type": "int",
+                            "lb": min_val,
+                            "ub": max_val
+                        })
                 elif t == "categorical":
-                    param_info.append({"name": k, "type": "cat", "lb": 0, "ub": len(v["choices"]) - 1, "choices": v["choices"]})
+                    param_info.append({
+                        "name": k,
+                        "type": "cat",
+                        "lb": 0,
+                        "ub": len(v["choices"]) - 1,
+                        "choices": v["choices"]
+                    })
             elif isinstance(v, list):
                 # List: treat as categorical
-                param_info.append({"name": k, "type": "cat", "lb": 0, "ub": len(v) - 1, "choices": v})
+                param_info.append({
+                    "name": k,
+                    "type": "cat",
+                    "lb": 0,
+                    "ub": len(v) - 1,
+                    "choices": v
+                })
             else:
                 # Single fixed value: degenerate interval
-                param_info.append({"name": k, "type": "constant", "lb": 0, "ub": 0, "choices": [v]})
+                param_info.append({
+                    "name": k,
+                    "type": "constant",
+                    "lb": 0,
+                    "ub": 0,
+                    "choices": [v]
+                })
         return param_info
+
     # Decode position to hyperparameters
     # 1. Baseline
     def _decode_position(self, pos):
@@ -102,7 +149,23 @@ class SalpSwarmOptimizer(BaseOptimizer):
 
 
     def objective_function(self,X, y, params):
-        return evaluate_model_cv(self.model, X=X, y=y, params=params, cv_config=base_config.get("cv_config", {}), scoring=base_config.get("metrics", {}).get("primary", "roc_auc"))[f'{self.metrics.get("primary", "roc_auc")}_test_mean']
+        if self.model == 'svm':
+            from ...models.svm import SVMWrapper
+            wrapper = SVMWrapper()
+            model = wrapper.create_model(params)
+        elif self.model == 'rf':
+            from ...models.rf import RandomForestWrapper
+            wrapper = RandomForestWrapper()
+            model = wrapper.create_model(params)
+        elif self.model == 'mlp':
+            from ...models.mlp import MLPWrapper
+            wrapper = MLPWrapper()
+            model = wrapper.create_model(params)
+        else:
+            raise ValueError(f"Unsupported model: {self.model}. Supported models are: rf, svm, mlp")
+        
+        # Evaluate the model using cross-validation
+        return evaluate_model_cv(model, X=X, y=y, cv_config=base_config.get("cv_config", {}), scoring=base_config.get("metrics", {}).get("primary", "roc_auc"))[f'{self.metrics.get("primary", "roc_auc")}_test_mean']
 
     # Optimize the objective function
     def optimize(self, X, y, objective_function, n_trials=None):

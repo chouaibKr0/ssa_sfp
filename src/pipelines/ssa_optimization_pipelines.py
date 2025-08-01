@@ -6,7 +6,7 @@ import pandas as pd
 from ..hpo.optimizers.metaheuristics import SalpSwarmOptimizer
 from ..evaluation.cross_validation import evaluate_model_cv
 from ..evaluation.metrics import get_primary_metric, get_secondary_metrics
-
+from ..models.svm import SVMWrapper  
 class SSA_SVM_Optimization_Pipeline:
     """
     Pipeline for SSA optimization.
@@ -18,6 +18,7 @@ class SSA_SVM_Optimization_Pipeline:
         self.hpo_config = load_config("config/hpo_config.yaml")
         self.cv_config = self.base_config.get("cross_validation", {})
         self.metrics = get_secondary_metrics()
+        self.model = 'svm'  # Default model for this pipeline"
 
     def run(self, dataset: str):
         """
@@ -55,7 +56,7 @@ class SSA_SVM_Optimization_Pipeline:
             X: Processed and reduced feature set
             y: Processed labels
         """
-        loader = DatasetLoader(self.base_config.get("data_dir", "data"))
+        loader = DatasetLoader(self.base_config.get("data_dir", "data/PROMISE/interim"))
         X, y = loader.load_csv_dataset(dataset)
         dataProcessor = DataPreprocessor(self.preprocessing_config)
         X = dataProcessor.reduce_dimensionality(X)
@@ -98,7 +99,9 @@ class SSA_SVM_Optimization_Pipeline:
         Returns:
             results: Evaluation results from cross-validation
         """
-        return evaluate_model_cv(self.model, X, y, self.cv_config, self.metrics, best_params)
+        wrapper = SVMWrapper()
+        model = wrapper.create_model(best_params)
+        return evaluate_model_cv(model, X, y, self.cv_config, self.metrics)
 
     def exporting_results_pipeline(self, dataset: str, model_name: str, hpo_name: str, best_params: dict, evaluation_results: dict):
         """

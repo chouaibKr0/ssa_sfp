@@ -7,16 +7,16 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 from typing import Tuple, Dict, Any, Optional, List, Union
-
+from ..utils import get_project_root
 
 class DatasetLoader:
     """Main class for loading datasets with consistent interface."""
     
     def __init__(self, data_dir: Union[str, Path] = "data/PROMISE/interim"):
-        self.data_dir = Path(data_dir)
-        
+        self.data_dir = get_project_root()/data_dir
+
     def load_csv_dataset(self, 
-                        filepath: Union[str, Path], 
+                        file_name: Union[str, Path], 
                         target_column: Optional[str] = None,
                         **kwargs) -> Tuple[pd.DataFrame, pd.Series]:
         """
@@ -30,7 +30,7 @@ class DatasetLoader:
         Returns:
             Tuple of (X, y) where X is features DataFrame and y is target Series
         """
-        filepath = Path(filepath)
+        filepath = Path(self.data_dir / file_name)
         
         if not filepath.exists():
             raise FileNotFoundError(f"Dataset not found: {filepath}")
