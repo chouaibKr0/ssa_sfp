@@ -102,7 +102,7 @@ class SalpSwarmOptimizer(BaseOptimizer):
 
 
     def objective_function(self,X, y, params):
-        return evaluate_model_cv(self.model, X=X, y=y, params=params, cv_config=base_config.get("cv_config", {}), scoring=base_config.get("metrics", {}).get("primary", "roc_auc"))
+        return evaluate_model_cv(self.model, X=X, y=y, params=params, cv_config=base_config.get("cv_config", {}), scoring=base_config.get("metrics", {}).get("primary", "roc_auc"))[f'{self.metrics.get("primary", "roc_auc")}_test_mean']
 
     # Optimize the objective function
     def optimize(self, X, y, objective_function, n_trials=None):

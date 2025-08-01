@@ -14,9 +14,13 @@ from pathlib import Path
 from typing import Dict, Any, Optional, Union, List
 from datetime import datetime
 import warnings
-
 # Suppress common warnings to keep output clean
 warnings.filterwarnings('ignore', category=FutureWarning)
+
+def get_project_root() -> Path:
+    """Get the root directory of the project."""
+    return Path(__file__).parent.parent
+
 
 def setup_logging(log_level: str = "INFO", log_dir: str = "experiments/logs") -> logging.Logger:
     """
@@ -52,7 +56,7 @@ def setup_logging(log_level: str = "INFO", log_dir: str = "experiments/logs") ->
     
     # File handler with timestamp
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    log_file = Path(log_dir) / f"experiment_{timestamp}.log"
+    log_file = get_project_root() / Path(log_dir) / f"experiment_{timestamp}.log"
     file_handler = logging.FileHandler(log_file)
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
@@ -60,25 +64,26 @@ def setup_logging(log_level: str = "INFO", log_dir: str = "experiments/logs") ->
     logger.info(f"Logging initialized. Log file: {log_file}")
     return logger
 
-def load_config(config_path: Union[str, Path]) -> Dict[str, Any]:
+def load_config(config_relative_path: Union[str, Path]) -> Dict[str, Any]:
     """
-    Load YAML configuration file.
-    
+    Load YAML configuration file from the project root, regardless of current working directory.
+
     Args:
-        config_path: Path to YAML file
-        
+        config_relative_path: Path to YAML file, relative to the project root.
+
     Returns:
-        Configuration dictionary
+        Configuration dictionary.
     """
-    config_path = Path(config_path)
-    
+    project_root = get_project_root()  # This is a Path object
+    config_path = project_root / config_relative_path
+
     if not config_path.exists():
         raise FileNotFoundError(f"Config file not found: {config_path}")
-    
+
     try:
         with open(config_path, 'r') as file:
             config = yaml.safe_load(file)
-        return config or {}  # Return empty dict if file is empty
+        return config or {}
     except yaml.YAMLError as e:
         raise ValueError(f"Error parsing YAML file {config_path}: {e}")
 
@@ -126,9 +131,6 @@ def set_random_seeds(seed: int = 42) -> None:
     except ImportError:
         pass
 
-def get_project_root() -> Path:
-    """Get the root directory of the project."""
-    return Path(__file__).parent.parent
 
 def create_experiment_directories(experiment_name: str, base_dir: str = "results") -> Dict[str, Path]:
     """
@@ -142,8 +144,9 @@ def create_experiment_directories(experiment_name: str, base_dir: str = "results
         Dictionary with paths to created directories
     """
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    experiment_dir = Path(base_dir) / f"{experiment_name}_{timestamp}"
-    
+    experiment_group = load_config("config/base_config.yaml").get("current_experiment", "unspecified")
+    experiment_dir = get_project_root() / Path(base_dir) / f"{experiment_group}" / f"{experiment_name}_{timestamp}"
+
     # Create subdirectories
     directories = ['raw_results', 'plots', 'models', 'logs']
     paths = {}
@@ -164,7 +167,7 @@ def save_results(results: Dict[str, Any], filepath: Union[str, Path]) -> None:
         results: Results dictionary to save
         filepath: Path to save the results
     """
-    filepath = Path(filepath)
+    filepath = get_project_root() / Path(filepath)
     filepath.parent.mkdir(parents=True, exist_ok=True)
     
     # Convert numpy types to native Python types for JSON serialization
@@ -388,3 +391,80 @@ def setup_experiment(experiment_name: str, config_files: List[str]) -> tuple:
         setup_mlflow_experiment(experiment_name, config.get('mlflow_tracking_uri', 'mlruns'))
     
     return config, logger, directories, experiment_id
+
+def save_experiment(experiment_id: str, model_name: str, hpo_name: str, config: Dict[str, Any], results: Dict[str, Any], 
+                   directories: Dict[str, Path], logger: logging.Logger) -> Dict[str, Path]:
+
+    """
+    Save complete experiment package: experiment_id, config, and results.
+
+    Args:
+        experiment_id: Unique experiment identifier
+        config: Complete experiment configuration
+        results: Experiment results dictionary
+        directories: Dictionary of experiment directories from create_experiment_directories
+        logger: Logger instance
+
+    Returns:
+        Dictionary with paths to saved files
+    """
+    
+    # Create complete experiment package
+    experiment_package = {
+        'experiment_id': experiment_id,
+        'timestamp': datetime.now().isoformat(),
+        'experiment_name': directories['experiment_dir'].name,
+        'dataset': config.get('dataset', 'unknown'),
+        'model_name': model_name,
+        'hpo_name': hpo_name,
+        'config': config,
+        'results': results
+    }
+    
+    # Save to local files
+    saved_files = {}
+    
+    # 1. Save complete package as single JSON
+    package_path = directories['raw_results'] / f"experiment_package_{experiment_id}.json"
+    save_results(experiment_package, package_path)
+    saved_files['package'] = package_path
+    
+    # 2. Save individual components (for easier access)
+    config_path = directories['raw_results'] / f"config_{experiment_id}.json"
+    results_path = directories['raw_results'] / f"results_{experiment_id}.json"
+    
+    save_results(config, config_path)
+    save_results(results, results_path)
+    saved_files['config'] = config_path
+    saved_files['results'] = results_path
+    
+    # 3. MLflow integration (if enabled)
+    if load_config("config/base_config.yaml").get('use_mlflow', True):
+        try:
+            import mlflow
+            
+            with mlflow.start_run():
+                # Log parameters from config
+                if 'model_params' in config:
+                    mlflow.log_params(config['model_params'])
+                if 'experiment_params' in config:
+                    mlflow.log_params(config['experiment_params'])
+                
+                # Log metrics from results
+                metrics_to_log = {k: v for k, v in results.items() 
+                                if isinstance(v, (int, float))}
+                if metrics_to_log:
+                    mlflow.log_metrics(metrics_to_log)
+                
+                # Log artifacts (the JSON files)
+                mlflow.log_artifacts(str(directories['raw_results']))
+                
+        except ImportError:
+            logger.warning("MLflow not available, skipping MLflow logging")
+    
+    # Log the save operation
+    logger.info(f"Experiment saved: {experiment_id}")
+    logger.info(f"Files saved: {list(saved_files.keys())}")
+    
+    return saved_files
+    

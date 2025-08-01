@@ -12,7 +12,7 @@ from typing import Tuple, Dict, Any, Optional, List, Union
 class DatasetLoader:
     """Main class for loading datasets with consistent interface."""
     
-    def __init__(self, data_dir: Union[str, Path] = "data"):
+    def __init__(self, data_dir: Union[str, Path] = "data/PROMISE/interim"):
         self.data_dir = Path(data_dir)
         
     def load_csv_dataset(self, 

@@ -1,8 +1,0 @@
-cv_type: "RepeatedStratifiedKFold"
-n_splits: 5
-n_repeats: 10
-random_state: 42
-
-# Statistical testing
-alpha: 0.05
-correction_method: "bonferroni"

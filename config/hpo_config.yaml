@@ -5,8 +5,8 @@ default_model: "svm"
 ssa_config:
 
   # Training parameters
-  num_salps: 20
-  max_iter: 30
+  num_salps: 30
+  max_iter: 100
   strategy: "basic"
   transformation_function: "baseline" # Options: 1."baseline", 2."smooth_bounded", 3."probabilistic", 4."deterministic_probabilistic", 5."symmetric_bounded", 6."differentiable", 7."floor", 8."modulo", 9."gaussian", 10."lerp",
 

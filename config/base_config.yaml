@@ -25,7 +25,7 @@ metrics:
   secondary: ["roc_auc","matthews_corrcoef", "f1_macro", "precision_macro", "recall_macro"]
 
 # Paths
-data_dir: "data"
+data_dir: "data/PROMISE/interim"
 results_dir: "results"
 logs_dir: "experiments/logs"
 
@@ -35,4 +35,6 @@ verbose: 1
 
 # mlflow settings
 use_mlflow: true
- mlflow_tracking_uri: "http://localhost:5000"
+# mlflow_tracking_uri: "http://localhost:5000"
+
+current_experiment: "ssa_svm"
